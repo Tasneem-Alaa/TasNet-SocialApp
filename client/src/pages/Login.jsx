@@ -54,7 +54,7 @@ const Login = () => {
         <div className='flex gap-2 items-center'>
           <img src={assets.logo} alt="" className='h-7 object-contain'/>
           <h1 className="bg-linear-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent text-3xl font-black pointer-events-none">
-            TasNeT
+            TasNet
           </h1>
         </div>
         <div className='flex flex-col gap-7 '>
@@ -83,7 +83,7 @@ const Login = () => {
           <button className="bg-linear-to-r from-purple-600 to-pink-400 w-50 h-10 rounded-3xl text-white font-bold 
                             transition-all duration-300 ease-in-out
                             hover:scale-105 hover:shadow-[0_0_20px_rgba(167,123,234,0.6)] 
-                            hover:from-purple-500 hover:to-pink-300 active:scale-95"
+                            hover:from-purple-500 hover:to-pink-300 active:scale-95 cursor-pointer"
                   onClick={onShowSignin}>
             Let's Go
           </button>
