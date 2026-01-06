@@ -10,7 +10,7 @@ const MenuItems = ({setSidebarOpen}) => {
                 <NavLink key={to} to={to} end={to === '/'} 
                 onClick={()=>setSidebarOpen(false)} 
                 className={({isActive})=> `text-accent px-3.5 py-2 flex items-center gap-3 rounded-xl
-                ${isActive ? 'bg-purple-50 text-purple-800':'hover:bg-gray-50'}`}>
+                ${isActive ? 'bg-purple-50 text-purple-800':'hover:bg-purple-50'}`}>
                     <Icon className='w-5 h-5'/>
                     {label}
                 </NavLink>
