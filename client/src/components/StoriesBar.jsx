@@ -9,7 +9,7 @@ const StoriesBar = () => {
 
     const [stories,setStories] = useState([])
     const [showModal,setShowModal] = useState(false)
-    const [viewStory,setViewStory] = useState(null)
+    const [currentStoryIndex,setCurrentStoryIndex] = useState(null)
 
     const fetchStories = async () => {
         setStories(dummyStoriesData)
@@ -39,7 +39,7 @@ const StoriesBar = () => {
             {/* story cards */}
             {
                 stories.map((story,index)=>(
-                    <div onClick={()=>setViewStory(story)} key={index} className={`relative rounded-lg shadow
+                    <div onClick={()=>setCurrentStoryIndex(index)} key={index} className={`relative rounded-lg shadow
                     min-w-30 ma-w-30 max-h-40 cursor-pointer hover:shadow-lg
                     transition-all duration-200]
                     active:scale-95`} style={{ backgroundColor: story.background_color }}>
@@ -79,7 +79,7 @@ const StoriesBar = () => {
 
         {/* View Story Modal */}
         {
-            viewStory && <StoryViewer viewStory={viewStory} setViewStory={setViewStory}/>
+            currentStoryIndex!== null && <StoryViewer stories={stories} currentStoryIndex={currentStoryIndex} setCurrentStoryIndex={setCurrentStoryIndex}/>
         }
     </div>
   )

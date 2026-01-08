@@ -1,13 +1,31 @@
 import { BadgeCheck, X } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 
-const StoryViewer = ({viewStory,setViewStory}) => {
+const StoryViewer = ({stories, currentStoryIndex, setCurrentStoryIndex}) => {
 
     const [progress, setProgress] = useState(0)
+    const viewStory = stories[currentStoryIndex]
 
     const handelClose = ()=>{
-        setViewStory(null)
+        setCurrentStoryIndex(null)
     }
+
+    const goNext = () => {
+        if (currentStoryIndex < stories.length - 1) {
+            setCurrentStoryIndex(currentStoryIndex + 1)
+        } else {
+            handelClose()
+        }
+    }
+
+    const goPrev = () => {
+        if (currentStoryIndex > 0) {
+            setCurrentStoryIndex(currentStoryIndex - 1)
+        }else {
+            handelClose()
+        }
+    }
+
 
     useEffect(()=>{
         let timer, progressInterval
@@ -24,7 +42,7 @@ const StoryViewer = ({viewStory,setViewStory}) => {
 
             // to close the story after 10s
             timer = setTimeout(()=>{
-                handelClose()
+                goNext()
             },duration)
         }
 
@@ -33,7 +51,20 @@ const StoryViewer = ({viewStory,setViewStory}) => {
             clearInterval(progressInterval)
         }
 
-    },[viewStory,setViewStory])
+    },[currentStoryIndex,viewStory])
+
+
+    useEffect(()=>{
+        const handelKey = (e)=>{
+            if (e.key === "ArrowRight") goNext()
+            if (e.key === "ArrowLeft") goPrev()
+            if (e.key === "Escape") setCurrentStoryIndex(null)
+        }
+
+        window.addEventListener("keydown",handelKey)
+        return ()=> window.removeEventListener("keydown",handelKey)
+    },[currentStoryIndex])
+
 
     if(!viewStory) return null
 
@@ -46,7 +77,7 @@ const StoryViewer = ({viewStory,setViewStory}) => {
                 );
             case 'video':
                 return (
-                    <video onEnded={handelClose} src={viewStory.media_url}
+                    <video onEnded={goNext} src={viewStory.media_url}
                     className=' max-h-screen' controls autoPlay/>
                 );
             case 'text':
