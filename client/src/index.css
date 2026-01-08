@@ -10,3 +10,7 @@
   --color-accent: #a78bfa;  /* درجة فاتحة للتفاعل */
   --font-sans: "Inter", sans-serif;
 }
+
+.no-scrollbar::-webkit-scrollbar{
+  display: none;
+}
