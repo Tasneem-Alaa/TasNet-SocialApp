@@ -19,7 +19,7 @@ const StoriesBar = () => {
     },[])
   return (
     <div className='w-screen sm:w-[calc(100vw-240px)]
-    lg:max-w-2xl no-scrollbar overflow-x-auto px-4'>
+    lg:max-w-2xl px-4'>
         <div className='flex gap-4 pb-5'>
             {/* add a story card */}
             <div onClick={()=>setShowModal(true)} className='rounded-lg shadow-sm min-w-30 
@@ -35,8 +35,9 @@ const StoriesBar = () => {
                     text-center'>Create Story</p>
                 </div>
             </div>
-
+            
             {/* story cards */}
+            <div className='flex gap-4 overflow-x-auto no-scrollbar'>
             {
                 stories.map((story,index)=>(
                     <div onClick={()=>setCurrentStoryIndex(index)} key={index} className={`relative rounded-lg shadow
@@ -70,6 +71,7 @@ const StoriesBar = () => {
                     </div>
                 ))
             }
+            </div>
 
         </div>
         {/* Add Story Modal */}
