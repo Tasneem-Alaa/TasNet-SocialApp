@@ -3,10 +3,36 @@ import React from 'react'
 
 const StoryViewer = ({viewStory,setViewStory}) => {
 
+    const renderContent = () =>{
+        switch (viewStory.media_type) {
+            case 'image':
+                return (
+                    <img src={viewStory.media_url} alt="" 
+                    className='max-w-full max-h-screen object-contain'/>
+                );
+            case 'video':
+                return (
+                    <video onEnded={()=>setViewStory(null)} src={viewStory.media_url}
+                    className=' max-h-screen' controls autoPlay/>
+                );
+            case 'text':
+                return (
+                    <div className='w-full h-full flex items-center justify-center
+                    p-8 text-white text-2xl text-center'>
+                        {viewStory.content}
+                    </div>
+                );
+        
+            default:
+                return null;
+        }
+    }
 
     const handelClose = ()=>{
         setViewStory(null)
     }
+
+
   return (
     <div className='fixed inset-0 h-screen bg-black bg-opacity-90 z-110 flex
     items-center justify-center' style={{backgroundColor: viewStory.media_type 
@@ -34,6 +60,13 @@ const StoryViewer = ({viewStory,setViewStory}) => {
         text-white text-3xl font-bold focus:outline-none'>
             <X className='w-8 h-8 hover:scale-110 cursor-pointer'/> 
         </button>
+
+        {/* Content Wrapper */}
+        <div className='max-w-[90vw] max-h-[90vh] flex items-center justify-center'>
+            {
+                renderContent()
+            }
+        </div>
     </div>
   )
 }
