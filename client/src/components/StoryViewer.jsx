@@ -1,7 +1,41 @@
 import { BadgeCheck, X } from 'lucide-react'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 const StoryViewer = ({viewStory,setViewStory}) => {
+
+    const [progress, setProgress] = useState(0)
+
+    const handelClose = ()=>{
+        setViewStory(null)
+    }
+
+    useEffect(()=>{
+        let timer, progressInterval
+        if(viewStory && viewStory.media_type !== 'video'){
+            setProgress(0)
+            const duration = 10000;
+            const stepTime = 100;
+            let elapsed = 0;
+
+            progressInterval = setInterval(()=>{
+                elapsed+=stepTime;
+                setProgress((elapsed/duration)*100)
+            },stepTime);
+
+            // to close the story after 10s
+            timer = setTimeout(()=>{
+                handelClose()
+            },duration)
+        }
+
+        return ()=>{
+            clearTimeout(timer);
+            clearInterval(progressInterval)
+        }
+
+    },[viewStory,setViewStory])
+
+    if(!viewStory) return null
 
     const renderContent = () =>{
         switch (viewStory.media_type) {
@@ -12,7 +46,7 @@ const StoryViewer = ({viewStory,setViewStory}) => {
                 );
             case 'video':
                 return (
-                    <video onEnded={()=>setViewStory(null)} src={viewStory.media_url}
+                    <video onEnded={handelClose} src={viewStory.media_url}
                     className=' max-h-screen' controls autoPlay/>
                 );
             case 'text':
@@ -28,9 +62,6 @@ const StoryViewer = ({viewStory,setViewStory}) => {
         }
     }
 
-    const handelClose = ()=>{
-        setViewStory(null)
-    }
 
 
   return (
@@ -40,7 +71,7 @@ const StoryViewer = ({viewStory,setViewStory}) => {
         {/* prograss Bar */}
         <div className=' absolute top-0 left-0 w-full h-1 bg-gray-700'>
             <div className='h-full bg-white transition-all duration-100 linear'
-            style={{width: '50'}}>
+            style={{width: `${progress}%`}}>
             </div>
         </div>
 
