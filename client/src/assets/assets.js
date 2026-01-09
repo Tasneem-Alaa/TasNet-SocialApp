@@ -454,3 +454,23 @@ export const dummyRecentMessagesData = [
         "updatedAt": "2025-07-10T12:47:40.510Z",
     }
 ]
+
+export const dummyConnectionsData = [
+    dummyUserData,
+    dummyUser2Data,
+    dummyUser3Data
+]
+
+export const dummyFollowersData = [
+    dummyUser2Data,
+    dummyUser3Data
+]
+
+export const dummyFollowingData = [
+    dummyUser2Data,
+    dummyUser3Data
+]
+
+export const dummyPendingConnectionsData = [
+    dummyUserData
+]
