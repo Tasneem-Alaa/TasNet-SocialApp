@@ -38,7 +38,7 @@ const CreatePost = () => {
           </div>
 
           {/* Text area */}
-          <textarea className='w-full resize-none max-h-20 mt-4 text-sm
+          <textarea className='w-full resize-none max-h-20 mt-4
           outline-none placeholder-gray-400' placeholder="What's happening?" 
           onChange={(e)=>setContent(e.target.value)} value={content}/>
 
@@ -48,7 +48,7 @@ const CreatePost = () => {
             <div className='flex flex-wrap gap-2 mt-4'>
               {images.map((img,i)=>(
                 <div key={i} className=' relative group'>
-                  <img src={URL.createObjectURL(img)} className='h-20 rounded-md'/>
+                  <img src={URL.createObjectURL(img)} className='h-40 rounded-md'/>
                   <div onClick={()=>setImages(images.filter((_,index)=>index!==i))} className=' absolute hidden group-hover:flex justify-center
                   items-center top-0 bottom-0 left-0 right-0 bg-black/40
                   rounded-md cursor-pointer'>

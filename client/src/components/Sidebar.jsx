@@ -18,9 +18,9 @@ const Sidebar = ({sidebarOpen,setSidebarOpen}) => {
     ${sidebarOpen? 'translate-x-0' : 'max-sm:-translate-x-full'} 
     transition-all duration-300 ease-in-out`}>
         <div className='w-full'>
-            <div className='flex gap-2 items-center'>
-                <img src={assets.logo} className='w-9 ml-7 my-2 cursor-pointer'
-                onClick={()=> navigate('/')} />
+            <div onClick={()=> navigate('/')} className='flex gap-2 items-center cursor-pointer'>
+                <img src={assets.logo} className='w-9 ml-7 my-2'/>
+
                 <h1 className="bg-linear-to-r from-purple-800 to-pink-400 bg-clip-text text-transparent text-3xl font-black pointer-events-none">
                     TasNet
                 </h1>
