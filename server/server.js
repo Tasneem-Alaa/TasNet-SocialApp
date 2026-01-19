@@ -16,6 +16,8 @@ app.use(cors())
 app.use(clerkMiddleware())
 
 app.get('/', (req,res)=>res.send('Server is runing hehe'))
+app.get('/hello', (req,res)=>res.send('Server is runing hehe again sorry'))
+
 app.use('/api/inngest',serve({ client: inngest, functions }))
 
 const PORT = process.env.PORT || 4000

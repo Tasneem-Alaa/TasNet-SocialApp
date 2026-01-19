@@ -1,6 +1,7 @@
 // get user data using userId
-
+import fs from 'fs'
 import User from "../models/User.js"
+import imagekit from '../configs/imageKit.js'
 
 const getUserData = async(req , res)=> {
     try {
@@ -42,10 +43,128 @@ const updateUserData = async(req , res)=> {
             full_name
         }
 
+        const profile = req.files.profile && req.files.profile[0]
+        const cover = req.files.cover && req.files.cover[0]
+
+        if(profile){
+            const buffer = fs.readFileSync(profile.path)
+            const response = await imagekit.uploade({
+                file: buffer,
+                filename: profile.originalname,
+            })
+
+            const url = imagekit.url({
+                path: response.filePath,
+                transformation: [
+                    {quality: 'auto'},
+                    {format: 'webp'},
+                    {width: '512'},
+                ]
+            })
+
+            updatedData.profile_picture = url;
+        }
+
+        if(cover){
+            const buffer = fs.readFileSync(cover.path)
+            const response = await imagekit.uploade({
+                file: buffer,
+                filename: cover.originalname,
+            })
+
+            const url = imagekit.url({
+                path: response.filePath,
+                transformation: [
+                    {quality: 'auto'},
+                    {format: 'webp'},
+                    {width: '1280'},
+                ]
+            })
+
+            updatedData.cover_picture = url;
+        }
+
+        const user = await User.findByIdAndUpdate(userId,updatedData,{new:true})
+
+        res.json({success:true, user, message: 'Profile updated successfully'})
+
+
     } catch(error) {
         console.log(error)
         res.json({success: false, message: error.message})
     }
 }
 
-export {getUserData, updateUserData}
+//find user using username, email, location, name
+const discoverUser = async(req , res)=> {
+    try {
+        const {userId} = req.auth()
+        const {input} = req.body
+
+        const allUser = await User.find({
+            $or:[
+                {username: new RegExp(input, 'i')},
+                {email: new RegExp(input, 'i')},
+                {full_name: new RegExp(input, 'i')}
+                {location: new RegExp(input, 'i')}
+            ]
+        })
+
+        const fillteredUsers = allUser.filter(user=> user._id !== userId)
+
+        res.json({success: true, users: fillteredUsers})
+
+        
+    } catch(error) {
+        console.log(error)
+        res.json({success: false, message: error.message})
+    }
+}
+
+//follow user
+const followUser = async(req , res)=> {
+    try {
+        const {userId} = req.auth()
+        const {id} = req.body
+
+        const user = await User.findById(userId)
+
+        if(user.following.includes(id)){
+            
+            return res.json({success: false, message: 'You are already following this user'})
+        }
+        
+        user.following.push(id);
+        await user.save()
+        
+        const toUser = await User.findById(id)
+        toUser.followers.push(userId);
+        await toUser.save()
+
+        res.json({success: true, message: 'Now you are following this user'})
+        
+    } catch(error) {
+        console.log(error)
+        res.json({success: false, message: error.message})
+    }
+}
+
+//unfollow user
+const unfollowUser = async(req , res)=> {
+    try {
+        const {userId} = req.auth()
+        const {id} = req.body
+
+        const user = await User.findById(userId)
+
+        
+
+        res.json({success: true, message: 'Now you are following this user'})
+        
+    } catch(error) {
+        console.log(error)
+        res.json({success: false, message: error.message})
+    }
+}
+
+export {getUserData, updateUserData, discoverUser}
