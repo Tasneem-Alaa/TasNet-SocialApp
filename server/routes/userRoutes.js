@@ -7,8 +7,8 @@ const userRouter = express.Router()
 
 userRouter.get('/all', getAllUsersData)
 userRouter.get('/data', protect, getUserData)
-userRouter.post('/update', upload.fields([{name: 'profile', maxCount: 1}]), 
-    upload.fields([{name: 'cover', maxCount: 1}]), protect, updateUserData)
+userRouter.post('/update', upload.fields([{name: 'profile', maxCount: 1}, 
+    {name: 'cover', maxCount: 1}]), protect, updateUserData)
 userRouter.post('/discover', protect, discoverUser)
 userRouter.post('/follow', protect, followUser)
 userRouter.post('/unfollow', protect, unfollowUser)

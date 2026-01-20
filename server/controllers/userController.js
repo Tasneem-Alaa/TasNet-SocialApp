@@ -34,7 +34,7 @@ const getUserData = async(req , res)=> {
 const updateUserData = async(req , res)=> {
     try {
         const {userId} = req.auth()
-        const {username, bio , location, full_name} = req.body
+        let {username, bio , location, full_name} = req.body
 
 
         const olduser = await User.findById(userId)
@@ -45,7 +45,7 @@ const updateUserData = async(req , res)=> {
             const userExists = await User.findOne({username})
             if(userExists){
                 // username already takes
-                finalUsername = olduser.userame
+                finalUsername = olduser.username
             }
         }
         const updatedData = {
@@ -76,16 +76,17 @@ const updateUserData = async(req , res)=> {
             })
 
             updatedData.profile_picture = url;
+            fs.unlinkSync(profile.path);
         }
-
+        
         if(cover){
             const buffer = fs.readFileSync(cover.path)
-            const response = await imagekit.uploade({
+            const response = await imagekit.upload({
                 file: buffer,
                 fileName: `cover_${userId}_${Date.now()}.jpg`,
                 folder: "tasnet/covers",
             })
-
+            
             const url = imagekit.url({
                 path: response.filePath,
                 transformation: [
@@ -94,13 +95,13 @@ const updateUserData = async(req , res)=> {
                     {format: 'webp'},
                 ]
             })
-
-            updatedData.cover_picture = url;
+            
+            updatedData.cover_photo = url;
+            fs.unlinkSync(cover.path);
         }
-
+        
         const user = await User.findByIdAndUpdate(userId,updatedData,{new:true})
 
-        fs.unlinkSync(profile.path);
         res.json({success:true, user, message: 'Profile updated successfully'})
 
     } catch(error) {
