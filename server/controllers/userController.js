@@ -3,10 +3,22 @@ import fs from 'fs'
 import User from "../models/User.js"
 import imagekit from '../configs/imageKit.js'
 
+const getAllUsersData = async(req , res)=> {
+    try {
+        const users = await User.find()
+        res.json({success: true, users})
+        
+    } catch(error) {
+        console.log(error)
+        res.json({success: false, message: error.message})
+    }
+}
+
 const getUserData = async(req , res)=> {
     try {
         const {userId} = req.auth()
-        const user = await User.findById(userId)
+        const user = await User.findOne({ _id: userId });
+        console.log("Clerk UserID:", userId); // شوفي القيمة اللي طالعة في الترمينال
         if(!user) {
             return res.json({success: false, message: "user not found"})
         }
@@ -22,22 +34,22 @@ const getUserData = async(req , res)=> {
 const updateUserData = async(req , res)=> {
     try {
         const {userId} = req.auth()
-        const {username, bio , location, full_name} = req.body()
+        const {username, bio , location, full_name} = req.body
 
 
         const olduser = await User.findById(userId)
         
-        !username && (username = olduser.username)
+        let finalUsername = username || olduser.username;
 
-        if(olduser.username !== username){
-            const user = User.findOne({username})
-            if(user){
+        if(username && olduser.username !== username){
+            const userExists = await User.findOne({username})
+            if(userExists){
                 // username already takes
-                username = olduser.userame
+                finalUsername = olduser.userame
             }
         }
         const updatedData = {
-            username,
+            username: finalUsername,
             bio,
             location,
             full_name
@@ -48,17 +60,18 @@ const updateUserData = async(req , res)=> {
 
         if(profile){
             const buffer = fs.readFileSync(profile.path)
-            const response = await imagekit.uploade({
+            const response = await imagekit.upload({
                 file: buffer,
-                filename: profile.originalname,
+                fileName: `profile_${userId}_${Date.now()}.jpg`,
+                folder: "tasnet/profiles",
             })
 
             const url = imagekit.url({
                 path: response.filePath,
                 transformation: [
-                    {quality: 'auto'},
+                    {height: "512", width: "512", crop: "at_max"},
+                    {quality: '80'},
                     {format: 'webp'},
-                    {width: '512'},
                 ]
             })
 
@@ -69,15 +82,16 @@ const updateUserData = async(req , res)=> {
             const buffer = fs.readFileSync(cover.path)
             const response = await imagekit.uploade({
                 file: buffer,
-                filename: cover.originalname,
+                fileName: `cover_${userId}_${Date.now()}.jpg`,
+                folder: "tasnet/covers",
             })
 
             const url = imagekit.url({
                 path: response.filePath,
                 transformation: [
-                    {quality: 'auto'},
+                    {width: '1280', height: "720", crop: "maintain_ratio"},
+                    {quality: '80'},
                     {format: 'webp'},
-                    {width: '1280'},
                 ]
             })
 
@@ -86,8 +100,8 @@ const updateUserData = async(req , res)=> {
 
         const user = await User.findByIdAndUpdate(userId,updatedData,{new:true})
 
+        fs.unlinkSync(profile.path);
         res.json({success:true, user, message: 'Profile updated successfully'})
-
 
     } catch(error) {
         console.log(error)
@@ -173,4 +187,4 @@ const unfollowUser = async(req , res)=> {
     }
 }
 
-export {getUserData, updateUserData, discoverUser, unfollowUser, followUser}
+export {getUserData, updateUserData, discoverUser, unfollowUser, followUser, getAllUsersData}
