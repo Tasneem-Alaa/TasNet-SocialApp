@@ -105,7 +105,7 @@ const discoverUser = async(req , res)=> {
             $or:[
                 {username: new RegExp(input, 'i')},
                 {email: new RegExp(input, 'i')},
-                {full_name: new RegExp(input, 'i')}
+                {full_name: new RegExp(input, 'i')},
                 {location: new RegExp(input, 'i')}
             ]
         })
@@ -156,10 +156,16 @@ const unfollowUser = async(req , res)=> {
         const {id} = req.body
 
         const user = await User.findById(userId)
-
         
+        user.following = user.following.filter(user => user._id !== id)
+        await user.save()
+        
+        const toUser = await User.findById(id)
+        toUser.followers = toUser.followers.filter(user => user._id !== id)
+        await toUser.save()
 
-        res.json({success: true, message: 'Now you are following this user'})
+
+        res.json({success: true, message: 'You are no longer following this user'})
         
     } catch(error) {
         console.log(error)
@@ -167,4 +173,4 @@ const unfollowUser = async(req , res)=> {
     }
 }
 
-export {getUserData, updateUserData, discoverUser}
+export {getUserData, updateUserData, discoverUser, unfollowUser, followUser}
