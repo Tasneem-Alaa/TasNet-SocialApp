@@ -3,6 +3,7 @@ import fs from 'fs'
 import User from "../models/User.js"
 import imagekit from '../configs/imageKit.js'
 import Connection from '../models/Connections.js'
+import Post from '../models/Post.js'
 
 const getAllUsersData = async(req , res)=> {
     try {
@@ -283,4 +284,32 @@ const acceptConnectionRequest = async (req,res)=>{
     }
 }
 
-export {getUserData, updateUserData, discoverUser, unfollowUser, followUser, getAllUsersData, sendConnectionRequest,getUserConnections, acceptConnectionRequest}
+//get user profile
+const getUserProfiles = async (req , res) =>{
+    try {
+        const {profileId} = req.body
+        const profile = await User.findById(profileId)
+        if(!profile){
+            return res.json({success:false, message: "profile not found"})
+        }
+        const posts = await Post.find({user: profileId}).populate('user')
+        res.json({success:true , profile, posts})
+    } catch (error) {
+        console.log(error)
+        res.json({success: false, message: error.message})
+        
+    }
+}
+
+export {
+    getUserData, 
+    updateUserData, 
+    discoverUser, 
+    unfollowUser, 
+    followUser, 
+    getAllUsersData, 
+    sendConnectionRequest,
+    getUserConnections, 
+    acceptConnectionRequest, 
+    getUserProfiles
+}
