@@ -2,6 +2,7 @@ import { Inngest } from "inngest";
 import User from "../models/User.js";
 import Connection from "../models/Connections.js";
 import sendEmail from "../configs/nodeMailer.js";
+import Story from "../models/Story.js";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "TasNet-app" });
@@ -93,7 +94,7 @@ const sendNewConnectionRequestReminder= inngest.createFunction(
         await step.sleepUntil("wait-for-24-hours", in24Hours)
         await step.run('send-connection-request-reminder', async ()=>{
             const connection = await Connection.findById(connectionId).populate('from_user_id to_user_id')
-
+            
             if(connection.status === "accepted"){
                 return {message: "Already accepted"}
             }
@@ -118,7 +119,22 @@ const sendNewConnectionRequestReminder= inngest.createFunction(
                 
                 return {message: "Reminder sent."}
         })
+        
+    }
+)
 
+//delete story after 24 hours
+const deleteStory = inngest.createFunction(
+    {id:'story-delete'},
+    {event:'app/story.delete'},
+    async ({event,step}) => {
+        const {storyId} = event.data
+        const in24Hours = new Date(Date.now() + 24 * 60 * 60 * 1000)
+        await step.sleepUntil("wait-for-24-hours", in24Hours)
+        await step.run('delete-story', async ()=>{
+            await Story.findByIdAndDelete(storyId)
+            return {message:"story deleted"}
+        })
     }
 )
 
@@ -128,4 +144,5 @@ export const functions = [
     syncUserUpdation,
     syncUserDeletion,
     sendNewConnectionRequestReminder,
+    deleteStory,
 ];
