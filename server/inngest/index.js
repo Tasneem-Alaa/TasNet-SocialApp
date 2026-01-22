@@ -141,40 +141,53 @@ const deleteStory = inngest.createFunction(
 
 //
 const sendNotificationOfUnseenMessages = inngest.createFunction(
-    {id:"send-unseen-messages-notification"},
-    {cron:"TZ=Egypt/Cairo 0 9 * * *"}, //every day at 9 am
-    async ({step})=>{
-        const messages = await Message.find({seen:false}).populate('to_user_id')
-        const unseenCount = {}
+    { id: "send-unseen-messages-notification" },
+    { cron: "0 9 * * *" }, // every day at 9 am
+    async ({ step }) => {
+        // 1. Fetch messages and populated users in one go
+        const messages = await step.run("fetch-unseen-messages", async () => {
+            return await Message.find({ seen: false }).populate('to_user_id');
+        });
 
-        messages.map(message =>{
-            unseenCount[message.to_user_id._id] = (unseenCount[message.to_user_id._id] || 0) +1
+        // 2. Group messages by user and store user data
+        const userNotifications = {};
+        messages.forEach(message => {
+            const user = message.to_user_id;
+            if (user && user._id) {
+                if (!userNotifications[user._id]) {
+                    userNotifications[user._id] = {
+                        email: user.email,
+                        full_name: user.full_name,
+                        count: 0
+                    };
+                }
+                userNotifications[user._id].count++;
+            }
+        });
 
-        })
+        // 3. Send emails efficiently
+        for (const userId in userNotifications) {
+            const { email, full_name, count } = userNotifications[userId];
 
-        for(const userId in unseenCount) {
-            const user = await User.findById(userId)
+            // Wrap each email in a step so Inngest tracks it
+            await step.run(`send-email-${userId}`, async () => {
+                const subject = `You have ${count} unseen messages`;
+                const body = `
+                    <div style="font-family: Arial, sans-serif; padding: 20px;">
+                        <h2>Hi ${full_name},</h2>
+                        <p>You have ${count} unseen messages</p>
+                        <p>Click <a href="${process.env.FRONTEND_URL}/messages" style="color: #10b981;">here</a> to view them</p>
+                        <br/>
+                        <p>Thanks, <br/>PingUp - Stay Connected</p>
+                    </div>`;
 
-            const subject = `You have ${unseenCount[userId]} unseen messages`
-            const body =`
-                <div style="font-family: Arial, sans-serif; padding: 20px;">
-                <h2>Hi ${user.full_name},</h2>
-                <p>You have ${unseenCount[userId]} unseen messages</p>
-                <p>Click <a href="${process.env.FRONTEND_URL}/messages" style="color: #10b981;
-                ">here</a> to view them</p>
-                <br/>
-                <p>Thanks, <br/>PingUp - Stay Connected</p>
-                </div>`
-
-            await sendEmail({
-                to:user.email,
-                subject,
-                body
-            })
+                await sendEmail({ to: email, subject, body });
+            });
         }
-        return {message:"Notification sent"}
+
+        return { message: `${Object.keys(userNotifications).length} users notified` };
     }
-)
+);
 
 // Create an empty array where we'll export future Inngest functions
 export const functions = [
