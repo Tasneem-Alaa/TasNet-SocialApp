@@ -20,7 +20,7 @@ userRouter.post('/connect', protect, sendConnectionRequest)
 userRouter.post('/accept', protect, acceptConnectionRequest)
 userRouter.get('/connections',protect, getUserConnections)
 
-userRouter.get('/profiles', getUserProfiles)
+userRouter.post('/profiles', getUserProfiles)
 userRouter.get('/recent-messages',protect, getUserRecentMessages)
 
 export default userRouter

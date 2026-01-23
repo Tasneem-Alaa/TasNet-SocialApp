@@ -3,6 +3,11 @@ import React, { useState } from 'react'
 import moment from 'moment'
 import { dummyUserData } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import { useAuth } from '@clerk/clerk-react'
+import api from '../api/axios'
+import toast from 'react-hot-toast'
+
 
 const PostCard = ({post}) => {
 
@@ -12,12 +17,35 @@ const PostCard = ({post}) => {
         '<span class="text-indigo-600 cursor-pointer">$1</span>')
     
     const [likes,setLikes] = useState(post.likes_count)
-    const currentUser = dummyUserData
+    const currentUser =useSelector((state)=>state.user.value)
 
-    const handelLike=()=>{
+    const {getToken} = useAuth()
+
+    const handelLike= async()=>{
+        const token = await getToken()
+        try {
+            const {data} = await api.post('/api/post/like',{postId: post._id},
+                {headers:{Authorization:`Bearer ${token}`}}
+            )
+            if(data.success){
+                toast.success(data.message)
+                setLikes(prev=>{
+                    if(prev.includes(currentUser._id)){
+                        return prev.filter(id=>id!==currentUser._id)
+                    }else{
+                        return [...prev,currentUser._id]
+                    }
+                })
+            }else{
+                toast.error(data.message)
+            }
+        } catch (error) {
+            toast.error(error.message)
+            
+        }
         if(likes.includes(currentUser._id))
         {
-             setLikes(likes.filter(id => id !== currentUser._id))
+            setLikes(likes.filter(id => id !== currentUser._id))
 
         }else{
             setLikes([...likes, currentUser._id])

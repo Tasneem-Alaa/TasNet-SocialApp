@@ -37,10 +37,14 @@ const getUserData = async(req , res)=> {
 const updateUserData = async(req , res)=> {
     try {
         const {userId} = req.auth()
+        console.log("Current User ID from Clerk:", userId); // تأكد أن الـ ID مطبوع صح
         let {username, bio , location, full_name} = req.body
-
+        console.log("Data received in body:", req.body); // لو ظهر {} يبقى المشكلة في الـ FormData بالفرونت
 
         const olduser = await User.findById(userId)
+        if(!olduser){
+            return res.json({success: false, message: "User not found in DB"});
+        }
         
         let finalUsername = username || olduser.username;
 
@@ -72,7 +76,7 @@ const updateUserData = async(req , res)=> {
             const url = imagekit.url({
                 path: response.filePath,
                 transformation: [
-                    {height: "512", width: "512", crop: "at_max"},
+                    {height: "512", width: "512"},
                     {quality: '80'},
                     {format: 'webp'},
                 ]
@@ -102,8 +106,8 @@ const updateUserData = async(req , res)=> {
             updatedData.cover_photo = url;
             fs.unlinkSync(cover.path);
         }
-        
-        const user = await User.findByIdAndUpdate(userId,updatedData,{new:true})
+        const user = await User.findByIdAndUpdate(userId,{ $set: updatedData },{new:true})
+        console.log("User after update:", user);
 
         res.json({success:true, user, message: 'Profile updated successfully'})
 
@@ -299,7 +303,7 @@ const getUserProfiles = async (req , res) =>{
         if(!profile){
             return res.json({success:false, message: "profile not found"})
         }
-        const posts = await Post.find({user: profileId}).populate('user')
+        const posts = await Post.find({user: profileId}).populate('user').sort({createdAt:-1})
         res.json({success:true , profile, posts})
     } catch (error) {
         console.log(error)
