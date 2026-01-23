@@ -177,15 +177,13 @@ const unfollowUser = async(req , res)=> {
         const {userId} = req.auth()
         const {id} = req.body
 
-        const user = await User.findById(userId)
-        
-        user.following = user.following.filter(user => user._id !== id)
-        await user.save()
-        
-        const toUser = await User.findById(id)
-        toUser.followers = toUser.followers.filter(user => user._id !== id)
-        await toUser.save()
+        await User.findByIdAndUpdate(userId, {
+            $pull: { following: id }
+        });
 
+        await User.findByIdAndUpdate(id, {
+            $pull: { followers: userId }
+        });
 
         res.json({success: true, message: 'You are no longer following this user'})
         
@@ -229,7 +227,7 @@ const sendConnectionRequest = async (req,res)=>{
                 data:{connectionId: newConnection._id}
             })
             
-            return res.json({success:true, message: "Connection reques sent successfully"})
+            return res.json({success:true, message: "Connection request sent successfully"})
         }else if(connection && connection.status == 'accepted'){
 
             return res.json({success:false, message: "You have sent more than 20 connection requests in the last 24 hours"})
@@ -246,7 +244,12 @@ const sendConnectionRequest = async (req,res)=>{
 const getUserConnections = async (req,res)=>{
     try{
         const {userId} = req.auth()
-        const user = await User.findById(userId).populate('connections followers following')
+        console.log(userId)
+        const user = await User.findOne({ _id: userId }).populate('connections followers following')
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found!!!" });
+        }
 
         const connections = user.connections
         const followers = user.followers
@@ -269,23 +272,22 @@ const acceptConnectionRequest = async (req,res)=>{
         const {id} = req.body
 
         
-        const connection = await Connection.find({to_user_id:id, to_user_id:userId})
+        const connection = await Connection.findOne({from_user_id:id, to_user_id:userId,status:'pending'})
         
         if(!connection){
-            
             return res.json({success:false, message:"connection not found" })
         }
         
-        const user = await User.findById(userId)
-        user.connections.push(id)
-        await user.save()
-        
-        const toUser = await User.findById(id)
-        toUser.connections.push(userId)
-        await toUser.save()
+        await User.findByIdAndUpdate(userId, { 
+            $addToSet: { connections: id } 
+        });
 
-        connection.status = 'accepted'
-        await connection.save()
+        await User.findByIdAndUpdate(id, { 
+            $addToSet: { connections: userId } 
+        });
+
+        connection.status = 'accepted';
+        await connection.save();
 
         res.json({success:true, message:"Connection accepted successfully"})
         

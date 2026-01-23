@@ -1,17 +1,51 @@
 import React, { useEffect, useState } from 'react'
-import { dummyRecentMessagesData } from '../assets/assets'
 import {Link} from 'react-router-dom'
 import moment from 'moment'
+import { useAuth, useUser } from '@clerk/clerk-react'
+import api from '../api/axios'
+import toast from 'react-hot-toast'
 
 const RecentMessages = () => {
     const [messages,setMessages] =useState([])
+    const {user} = useUser()
+    const {getToken} = useAuth()
+
     const fetchRecentMessages = async()=>{
-        setMessages(dummyRecentMessagesData)
+        try {
+            const token = await getToken()
+            const {data} = await api.get('/api/user/recent-messages',{
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            if(data.success){
+                const groupMessgaes = data.messages.reduce((acc,message)=>{
+                    const senderId = message.from_user_id._id
+                    if(!acc[senderId] || new Date(message.createdAt) > new Date(acc[senderId].createdAt)){
+                        acc[senderId] = message
+
+                    }
+                    return acc
+                },{})
+
+                //sort msg by date
+                const sortMessages = Object.values(groupMessgaes).sort((a,b)=>
+                new Date(b.createdAt) - new Date(a.createdAt))
+
+                setMessages(sortMessages)
+            }else{
+                toast.error(data.message)
+            }
+        } catch (error) {
+            toast.error(error.message)
+        }
     }
 
     useEffect(()=>{
-        fetchRecentMessages()
-    },[])
+        if(user){
+            fetchRecentMessages()
+            setInterval(fetchRecentMessages,30000)
+            return ()=>{clearInterval()}
+        }
+    },[user])
 
   return (
     <div className='bg-white max-w-xs mt-4 p-4 min-h-20
@@ -19,7 +53,7 @@ const RecentMessages = () => {
         <h3 className='font-semibold text-slate-800 mb-4 '>Recent Messages</h3>
         <div className=' flex flex-col max-h-56 overflow-y-scroll no-scrollbar'>
             {
-                messages.map((message,index)=>(
+                messages?.map((message,index)=>(
                     <Link to={`/messages/${message.from_user_id._id}`} key={index} className='flex items-start gap-2 py-2 hover:bg-slate-100'>
                         <img src={message.from_user_id.profile_picture} alt="" 
                         className='w-8 h-8 rounded-full'/>

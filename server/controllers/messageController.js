@@ -10,7 +10,7 @@ const sseController = (req,res)=>{
 
     //set sse headers
     res.setHeader('Content-Type', 'text/event-stream')
-    res.setHeader('Cash-Control', 'no-cash')
+    res.setHeader('Cache-Control', 'no-cash')
     res.setHeader('Connection', 'keep-alive')
     res.setHeader('Access-Control-Allow-Origin', '*')
 
@@ -104,7 +104,6 @@ const getChatMessages = async (req,res)=>{
 const getUserRecentMessages = async (req,res)=>{
     try {
         const {userId} = req.auth()
-        const {to_user_id} = req.body
         const messages = await Message.find({to_user_id:userId}).populate('from_user_id to_user_id').sort({createdAt:-1})
         
         res.json({success:true,messages})
@@ -113,6 +112,7 @@ const getUserRecentMessages = async (req,res)=>{
         res.json({success:false, message: error.message})
     }
 }
+
 export {
     sseController,
     sendMessage,
