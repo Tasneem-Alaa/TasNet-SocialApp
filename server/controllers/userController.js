@@ -21,7 +21,6 @@ const getUserData = async(req , res)=> {
     try {
         const {userId} = req.auth()
         const user = await User.findOne({ _id: userId });
-        console.log("Clerk UserID:", userId); // شوفي القيمة اللي طالعة في الترمينال
         if(!user) {
             return res.json({success: false, message: "user not found"})
         }
@@ -37,9 +36,7 @@ const getUserData = async(req , res)=> {
 const updateUserData = async(req , res)=> {
     try {
         const {userId} = req.auth()
-        console.log("Current User ID from Clerk:", userId); // تأكد أن الـ ID مطبوع صح
         let {username, bio , location, full_name} = req.body
-        console.log("Data received in body:", req.body); // لو ظهر {} يبقى المشكلة في الـ FormData بالفرونت
 
         const olduser = await User.findById(userId)
         if(!olduser){
@@ -107,7 +104,6 @@ const updateUserData = async(req , res)=> {
             fs.unlinkSync(cover.path);
         }
         const user = await User.findByIdAndUpdate(userId,{ $set: updatedData },{new:true})
-        console.log("User after update:", user);
 
         res.json({success:true, user, message: 'Profile updated successfully'})
 
@@ -244,7 +240,6 @@ const sendConnectionRequest = async (req,res)=>{
 const getUserConnections = async (req,res)=>{
     try{
         const {userId} = req.auth()
-        console.log(userId)
         const user = await User.findOne({ _id: userId }).populate('connections followers following')
 
         if (!user) {

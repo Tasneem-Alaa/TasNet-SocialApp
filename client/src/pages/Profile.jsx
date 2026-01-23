@@ -25,12 +25,10 @@ const Profile = () => {
 
   const fetchUser = async (profileId)=>{
     const token = await getToken()
-    console.log(token)
     try {
       const {data} = await api.post('/api/user/profiles', {profileId}, {
         headers: {Authorization: `Bearer ${token}`}
       })
-      console.log(data)
       if(data.success){
         setUser(data.profile)
         setPosts(data.posts)
