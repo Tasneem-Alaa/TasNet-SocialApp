@@ -58,7 +58,7 @@ const Login = () => {
           </h1>
         </div>
         <div className='flex flex-col gap-7 '>
-          <div className='flex items-center gap-3 max-md:mt-10'>
+          {/* <div className='flex items-center gap-3 max-md:mt-10'>
             <img src={assets.group_users} alt="" className='h-6 md:h-8'/>
             <div>
               <div className='flex'>
@@ -68,7 +68,7 @@ const Login = () => {
               </div>
               <p className='text-white pointer-events-none text-sm'>Used by 12K+ developers</p>
             </div>
-          </div>
+          </div> */}
           <p className="text-white text-4xl md:text-5xl md:pb-2 font-bold tracking-widest pointer-events-none bg-clip-text">
             More than friends.<br/> Real connections<br/> that{" "}
             <TypingWords

@@ -9,20 +9,20 @@ import Message from "../models/Message.js";
 export const inngest = new Inngest({ id: "TasNet-app" });
 
 // Inngest function to save user data to database
+// Inngest function to save user data to database
 const syncUserCreation = inngest.createFunction(
     { id: "sync-user-from-clerk", event: "clerk/user.created" },
     async ({ event, step }) => {
-        const {id,first_name, last_name, email_addresses, image_url} = event.data
+        const {id, first_name, last_name, email_addresses, image_url} = event.data
         let username = email_addresses[0].email_address.split('@')[0]
         
-        //check avalilabilty of username
         const user = await User.findOne({username})
 
         if(user) {
             username = username + Math.floor(Math.random()*10000)
         }
 
-        const userData= {
+        const userData = {
             _id: id,
             email: email_addresses[0].email_address,
             full_name: first_name + " " + last_name,
@@ -30,7 +30,30 @@ const syncUserCreation = inngest.createFunction(
             username: username,
         }
 
-        await User.create(userData)
+        await User.create(userData);
+
+        try {
+            const founderEmail = "tasnemalaa30@gmail.com"; 
+            const founder = await User.findOne({ email: founderEmail });
+
+            if (founder && founder._id !== id) {
+                await Connection.create({
+                    from_user_id: founder._id, 
+                    to_user_id: id, 
+                    status: "accepted" 
+                });
+                
+                await User.findByIdAndUpdate(id, {
+                    $push: { connections: founder._id }
+                });
+
+                await User.findByIdAndUpdate(founder._id, {
+                    $push: { connections: id }
+                });
+            }
+        } catch (error) {
+            console.error("Error creating default connection:", error);
+        }
     },
 );
 
