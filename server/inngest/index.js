@@ -10,8 +10,7 @@ export const inngest = new Inngest({ id: "TasNet-app" });
 
 // Inngest function to save user data to database
 const syncUserCreation = inngest.createFunction(
-    { id: "sync-user-from-clerk" },
-    { event: "clerk/user.created" },
+    { id: "sync-user-from-clerk", event: "clerk/user.created" },
     async ({ event, step }) => {
         const {id,first_name, last_name, email_addresses, image_url} = event.data
         let username = email_addresses[0].email_address.split('@')[0]
@@ -37,8 +36,7 @@ const syncUserCreation = inngest.createFunction(
 
 // inngest function to update userdata in database
 const syncUserUpdation = inngest.createFunction(
-    { id: "update-user-from-clerk" },
-    { event: "clerk/user.updated" },
+    { id: "update-user-from-clerk", event: "clerk/user.updated" },
     async ({event}) => {
         const {id,first_name, last_name, email_addresses, image_url} = event.data
         
@@ -54,8 +52,7 @@ const syncUserUpdation = inngest.createFunction(
 
 // inngest function to delete userdata in database
 const syncUserDeletion = inngest.createFunction(
-    { id: "delete-user-with-clerk" },
-    { event: "clerk/user.deleted" },
+    { id: "delete-user-with-clerk", event: "clerk/user.deleted" },
     async ({event}) => {
         const {id} = event.data
 
@@ -65,8 +62,7 @@ const syncUserDeletion = inngest.createFunction(
 
 //inngest function to send reminder when a new connection request is added
 const sendNewConnectionRequestReminder= inngest.createFunction(
-    {id: "send-new-connection-request-reminder"},
-    {event: "app/connection-request"},
+    { id: "send-new-connection-request-reminder", event: "app/connection-request" },
     async({event,step})=>{
         const {connectionId} = event.data
 
@@ -126,8 +122,7 @@ const sendNewConnectionRequestReminder= inngest.createFunction(
 
 //delete story after 24 hours
 const deleteStory = inngest.createFunction(
-    {id:'story-delete'},
-    {event:'app/story.delete'},
+    { id: 'story-delete', event: 'app/story.delete' },
     async ({event,step}) => {
         const {storyId} = event.data
         const in24Hours = new Date(Date.now() + 24 * 60 * 60 * 1000)
@@ -139,10 +134,9 @@ const deleteStory = inngest.createFunction(
     }
 )
 
-//
+// send notification of unseen messages
 const sendNotificationOfUnseenMessages = inngest.createFunction(
-    { id: "send-unseen-messages-notification" },
-    { cron: "0 9 * * *" }, // every day at 9 am
+    { id: "send-unseen-messages-notification", cron: "0 9 * * *" },
     async ({ step }) => {
         // 1. Fetch messages and populated users in one go
         const messages = await step.run("fetch-unseen-messages", async () => {
