@@ -19,7 +19,7 @@ const CreatePost = () => {
 
   const handleSubmit = async ()=> {
     if(!images.length && !content){
-      return toast.error('Please add at least one inage ot text')
+      return toast.error('Please add at least one image or text')
     }
     setLoading(true)
     const postType = images.length && content? 'text_with_image' : images.length? 'image' : 'text'
